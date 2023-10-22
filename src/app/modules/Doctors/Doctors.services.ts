@@ -19,18 +19,7 @@ const getAllDoctors = async (
     searchTerm: string,
     filtersData: Record<string, unknown>,
 ): Promise<Doctor[] | any> => {
-    // const filterConditions: Prisma.DoctorWhereInput[] = [];
-
-    // if (filtersData.specialization) {
-    //     filterConditions.push({
-    //         specialization: {
-    //             name: {
-    //                 equals: filtersData.specialization as string
-    //             }
-    //         }
-    //     });
-    // }
-
+   
     const result = await prisma.doctor.findMany({
         where: {
             AND: [
