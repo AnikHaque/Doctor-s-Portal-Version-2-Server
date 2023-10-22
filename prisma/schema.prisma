@@ -1,0 +1,190 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Doctor {
+  id               String            @id @default(uuid())
+  fullName         String
+  email            String            @unique
+  phoneNumber      String            @unique
+  role             String
+  qualification    String
+  specializationId String            @map("specialization_id")
+  specialization   Specialization    @relation(fields: [specializationId], references: [id])
+  password         String
+  isPasswordReset  Boolean           @default(false) @map("is_password_reset")
+  createdAt        DateTime          @default(now()) @map("created_at")
+  updatedAt        DateTime          @updatedAt @map("updated_at")
+  availability     AvailableDoctor[]
+
+  @@map("doctors")
+}
+
+model Specialization {
+  id          String    @id @default(uuid())
+  name        String    @unique
+  description String?
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+  doctors     Doctor[]
+  services    Service[]
+
+  @@map("specializations")
+}
+
+model Patient {
+  id             String          @id @default(uuid())
+  fullName       String          @map("full_name")
+  email          String          @unique
+  phoneNumber    String          @unique @map("phone_number")
+  password       String          @unique
+  role           String
+  createdAt      DateTime        @default(now()) @map("created_at")
+  updatedAt      DateTime        @updatedAt @map("updated_at")
+  medicalProfile MedicalProfile?
+  appointments   Appointment[]
+
+  @@map("patients")
+}
+
+model MedicalProfile {
+  id               String   @id @default(uuid())
+  profilePricture  String?  @map("profile_pricture")
+  address          String
+  dob              String   @map("date_of_birth")
+  gender           String
+  medicalHistory   String?  @map("medical_history")
+  emergencyContact String   @map("emergency_contact")
+  profileStatus    String   @map("profile_status")
+  createdAt        DateTime @default(now()) @map("created_at")
+  updatedAt        DateTime @updatedAt @map("updated_at")
+
+  patientId String  @unique @map("patient_id")
+  patient   Patient @relation(fields: [patientId], references: [id])
+
+  @@map("medical_history")
+}
+
+model Appointment {
+  id              String   @id @default(uuid())
+  appointmentDate DateTime @map("appointment_date")
+  status          String   @map("appointment_status")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  patientId String  @map("patient_id")
+  patient   Patient @relation(fields: [patientId], references: [id])
+
+  payment Payment?
+
+  availableServiceId String           @map("available_service_id")
+  availableService   AvailableService @relation(fields: [availableServiceId], references: [id])
+
+  @@map("appointments")
+}
+
+model AvailableDoctor {
+  id            String   @id @default(uuid())
+  availableDate DateTime @map("available_date")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  doctorId String @map("doctor_id")
+  doctor   Doctor @relation(fields: [doctorId], references: [id])
+
+  slotId String    @map("slot_id")
+  slot   TimeSlots @relation(fields: [slotId], references: [id])
+
+  availableServices AvailableService[]
+
+  @@unique([doctorId, slotId, availableDate])
+  @@map("available_doctors")
+}
+
+model AvailableService {
+  id             String   @id @default(uuid())
+  slotDate       DateTime @map("slot_date")
+  availableSeats Int      @map("available_seats")
+  isBooked       Boolean  @default(false) @map("is_booked")
+  fees           String
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  appointments Appointment[]
+
+  serviceId String  @map("service_id")
+  service   Service @relation(fields: [serviceId], references: [id])
+
+  slotId String    @map("slot_id")
+  slot   TimeSlots @relation(fields: [slotId], references: [id])
+
+  availableDoctorId String           @map("available_doctor_id")
+  availableDoctor   AvailableDoctor? @relation(fields: [availableDoctorId], references: [id])
+
+  @@unique([slotId, serviceId, slotDate, availableDoctorId])
+  @@map("available_services")
+}
+
+model Service {
+  id          String   @id @default(uuid())
+  name        String   @unique
+  description String?
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  availableServices AvailableService[]
+
+  specializationId String         @map("specialization_id")
+  specialization   Specialization @relation(fields: [specializationId], references: [id])
+
+  @@map("services")
+}
+
+model TimeSlots {
+  id        String @id @default(uuid())
+  startTime String @map("start_time")
+
+  createdAt         DateTime           @default(now()) @map("created_at")
+  updatedAt         DateTime           @updatedAt @map("updated_at")
+  availableDoctors  AvailableDoctor[]
+  availableServices AvailableService[]
+
+  @@map("time_slots")
+}
+
+model Payment {
+  id            String   @id @default(uuid())
+  amount        String
+  paymentDate   DateTime @default(now()) @map("payment_date")
+  paymentStatus String   @map("payment_status")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  appointmentId String      @unique @map("apoointment_id")
+  appointment   Appointment @relation(fields: [appointmentId], references: [id])
+
+  @@map("payment")
+}
+
+model Admin {
+  id              String  @id @default(uuid())
+  fullName        String  @map("full_name")
+  email           String  @unique
+  phoneNumber     String  @map("phone_number")
+  password        String
+  role            String
+  isPasswordReset Boolean @map("is_password_reset")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("admin")
+}
