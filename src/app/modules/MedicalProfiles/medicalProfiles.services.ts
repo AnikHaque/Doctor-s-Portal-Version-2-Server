@@ -1,14 +1,7 @@
 import { MedicalProfile } from '@prisma/client'
 import prisma from '../../shared/prisma'
 
-// const createMedicalProfile = async (
-//   medicalProfile: MedicalProfile,
-// ): Promise<MedicalProfile> => {
-//   const result = await prisma.medicalProfile.create({
-//     data: medicalProfile,
-//   })
-//   return result
-// }
+
 
 const getAllMedicalProfiles = async (): Promise<MedicalProfile[] | any> => {
   const result = await prisma.medicalProfile.findMany()
