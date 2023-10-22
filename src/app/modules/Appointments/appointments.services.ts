@@ -2,7 +2,7 @@ import { Appointment } from "@prisma/client";
 import prisma from "../../shared/prisma";
 
 const bookAppointment = async (patientId: string, availableServiceId: string, appointmentDate: string): Promise<any> => {
-    //checking if the available service exist
+   
     const availableService = await prisma.availableService.findUnique({
         where: {
             id: availableServiceId
